@@ -1,0 +1,297 @@
+%!TEX program = xelatex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
+\usepackage{xeCJK}
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage{enumerate}
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{	
+\normalfont \normalsize 
+\textsc{Zhiyuan College, Shanghai Jiaotong University} \\ % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge CS225: Probability and Computing Homework 1 \\ % The assignment title
+\horrule{2pt} \\ % Thick bottom horizontal rule
+}
+
+\author{Zihao Ye} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+\section*{Problem 1}
+\begin{enumerate}[(a)]
+	\item 
+	用$0$表示原硬币生成了正面, 用$1$表示原硬币生成了反面.
+
+	每轮抛两次硬币, 如果为01, 则视为正面, 如果为10, 则视作反面, 否则进行下一轮.
+
+	如果这个过程终止, 容易证明$Pr\{HEADS\} = Pr\{TAILS\}$.
+
+	需要进行的轮数为$\frac{1}{2\rho(1-\rho)}<\frac{1}{\rho(1-\rho)}$
+	\item 
+	一个规则可以视为一个函数$f:(X_1,X_2,\cdots,X_n)\longrightarrow (Z_1, Z_2, \cdots, Z_K, K)$.
+
+	其中$\{X_i\}$为biased coin产生的正反面序列, $\{Z_i\}$表示由我们的规则产生的unbiased序列, 应当满足$P(\mathbf{Z} = \mathbf{z}|K=k) = \frac{1}{2^k}$.
+
+	考虑输入的信息熵:
+	\begin{eqnarray}
+		H(X_1,\cdots, X_n)& \geq & H(Z_1, Z_2, \cdots, Z_K) = H(Z_1, Z_2, \cdots, Z_K, K) \\
+						  & = & H(K) + H(Z_1, \cdots, Z_K \mid K)\\
+						  & = & H(K) - E[\log Pr\{Z_1,\cdots, Z_k | K\}] \\
+						  & = & H(K) + E[K] \\
+						  & \geq & E[K]
+	\end{eqnarray}
+	而$X_1,\cdots,X_n$之间两两独立同分布, $H(X_1, \cdots, X_n) = nH(\rho)$, 由此得出:
+	$$E[K] \leq n(-\rho \log \rho - (1-\rho) \log (1-\rho)) $$
+
+	下面考虑如何达到这个上界:
+
+	采用如下递归生成规则$g$:
+
+	设输入的串为$A$, 设串$X,Y$初始为空($\epsilon$), 每次考虑$A_{2k-1}A_{2k}$:
+
+	\begin{enumerate}
+	\item
+	若它为$01$, 则生成出了一个$0$, $Y_n = Y_n + 0$.
+	\item
+	若它为$10$, 则生成出了一个$1$, $Y_n = Y_n + 0$.
+	\item
+	若它为$00$, 则$X_n = X_n + 0$, $Y_n = Y_n + 1$.
+	\item
+	若它为$11$, 则$X_n = X_n + 1$, $Y_n = Y_n + 1$.
+	\end{enumerate}
+
+	当整个串处理完成之后, 运行$g(X), g(Y)$.
+
+	由于每次递归下去串的长度都减半, 此过程必然结束(在$\log n$层之后).
+	注意到, 假设输入串$A$每个字符满足$B(1, \rho)$, 则$X$的每个字符满足$B(1, \frac{\rho^2}{\rho^2 + (1-\rho)^2})$, $Y$的每个字符满足$B(1, \rho^2 + (1 - \rho)^2)$. 
+
+	用$f(p)(p\in [0, 1])$表示在每个字符满足$B(1,p)$的情况下,每个输入字符在此过程中生成出的均匀分布的字符数目的期望:
+	$$f(p) = pq + \frac{1}{2}\left(p^2 + q^2\right)f\left(\frac{p^2}{p^2 + q^2}\right) + \frac{1}{2}f\left(p^2 + q^2\right)$$
+
+	满足$f(p) = f(q), f(0) = f(1) = 0$, 令$S$为此类函数组成的函数空间.
+
+	令$h:S\rightarrow S$为一高阶函数满足$(hf) = \lambda p. pq + \frac{p^2 + q^2}{2}f\left(\frac{p^2}{p^2 + q^2}\right) + \frac{1}{2}f\left(p^2 + q^2\right)$.
+
+	则$H(p) = -p \log p - q \log q$为$h$的不动点: $h(H) = H$, 假设$h$存在其它的不动点$H'$, 则
+	$$(H - H') = \frac{p^2 + q^2}{2}(H-H')\left(\frac{p^2}{p^2+q^2}\right) + \frac{1}{2}(H-H')\left(p^2 + q^2\right)$$
+
+	若$(H - H') \not= 0$, 则设$M = \sup(H - H') > 0 $, $(H - H')(x) \leq \frac{1+p^2 + q^2}{2} M < M$, 矛盾.
+
+	故$h$存在唯一的不动点$H$, 当$n$足够大时, 可以认为该规则$g$产生了最大可能数目的unbiased coins.
+
+\end{enumerate}
+
+\section*{Problem 2}
+\begin{enumerate}[(a)]
+	\item
+		设抛$n$次硬币之后HEADS比TAILS多的数目最大值为$a_n$, TAILS比HEADS多的数目最大值为$b_n$, $H = \max\{a_n, b_n\}$, 
+		$$E[H] = E[\max\{a_n, b_n\}] \leq E[a_n] + E[b_n]$$
+		由于对称性$E[a_n] = E[b_n]$, $E[H] \leq 2E[a_n]$.
+
+		设$X_n$为一个随机变量, 表示抛$n$次硬币之后HEADS比TAILS多的数目.
+		\begin{eqnarray}
+		E[a_n] &	=& \sum_{i=1}^{n} Pr\{a_n\geq i\} \label{prob2::step1}\\
+			   &	\leq& \sum_{i=1}^{n} Pr\{X_n\geq i\} + Pr\{X_n\geq i + 1\} \label{prob2::step2}\\
+			   &	=& \left(2\sum_{i=1}^{n} Pr\{X_n\geq i\}\right) - Pr\{X_n\geq 1\} \\ 
+			   & \leq& 2\sum_{i=1}^{n} Pr\{X_n\geq i\}
+		\label{prob2::eq1}
+		\end{eqnarray}
+		其中\eqref{prob2::step1}到\eqref{prob2::step2}利用了对称性: 将$a_n\geq i$关于$X_n$是否等于$a_n$分类, 如果等于, $Pr\{a_n\geq i\} = Pr\{X_n\geq i\}$, 否则由对称性$Pr\{a_n\geq i\} = Pr\{X_n \geq i+1\}$.
+
+		由于$E[X_n] = 0$, $Var[X_n] = n Var[X_1] = n$, $E[X_n^2] = Var[X_n] - E[X_n]^2 = n$.\\
+		由Chebyshev Inequality可以得到$Pr\{X_n\geq i\}$的一个上界:
+		\begin{equation}Pr\{X_n\geq i\} = Pr\{X_n \leq -i\} = \frac{1}{2} Pr\{X_n ^ 2 \geq i^2\} \leq \frac{1}{2}\frac{E[X_n^2]}{i^2} = \frac{n}{2i^2}\label{prob2::eq2}
+		\end{equation}
+
+		将\eqref{prob2::eq2}代入\eqref{prob2::eq1}, 得到:
+		\begin{eqnarray*}
+		E[a_n] &\leq & 2\sum_{i=1}^{\left\lfloor\sqrt{n}\right\rfloor}1 + n\sum_{i=\left\lceil\sqrt{n}\right\rceil}{n}\frac{1}{i^2} \\
+			   &\leq & 2\sqrt{n} + \frac{n}{\sqrt{n} - 1} \\
+			   &=	 & O\left(\sqrt{n}\right)
+		\end{eqnarray*}
+
+		由于$E[H] \leq 2E[a_n]$, 得到\begin{equation}E[H] = O\left(\sqrt{n}\right)\label{prob2::sol1}\end{equation}.
+
+		从另一个方面考虑, 设$Y_n$为抛$n$次硬币之后HEADS比TAILS多的数目的绝对值.\\
+		有$H\geq Y_n, E[H] \geq E[Y_n]$.
+
+		\begin{eqnarray}
+			E[Y_n] &= &\frac{1}{2^{n-1}}\sum_{k=0}^{\left\lfloor\frac{n}{2}\right\rfloor}{n\choose k}(n - 2k) \\
+				   &= &\frac{n}{2^{n-1}}\sum_{k=0}^{\left\lfloor\frac{n}{2}\right\rfloor}{n\choose k} - \frac{n}{2^{n-2}}\sum_{k=0}^{\left\lfloor\frac{n}{2}\right\rfloor - 1}{{n - 1}\choose k} \\
+				   &= & \left\{\begin{array}{ll}
+				   			n{n - 1\choose\frac{n-1}{2}}\frac{1}{2^{n-1}} & 2\not| n\\
+				   			n{n\choose\frac{n}{2}}\frac{1}{2^{n}} & 2| n
+				   		\end{array}\right.
+		\end{eqnarray}
+
+		由于${n \choose \frac{n}{2}} = \Theta\left(\frac{2^n}{\sqrt{n}}\right)$, $E[Y_n] = \Theta\left(\sqrt{n}\right)$.
+
+		由此可推出$E[H] = \Omega\left(\sqrt{n}\right)$, 联立\eqref{prob2::sol1}, 得出$E[H] = O\left(\sqrt{n}\right)$
+	\item
+		设$L(\pi), L'(\pi)$分别为$\pi$的最长上升子序列和最长不上升子序列的长度(由于$\pi$中两两元素各不相同, 最长不上升子序列等价于最长下降子序列), 由偏序集的Dilworth定理, 
+		$$L(\pi) \cdot L'(\pi) \geq n$$
+		因此对于每个outcome有: $L(\pi) + L'(\pi) \geq 2\sqrt{n}$,
+		$$2E[L(\pi)] \geq 2\sqrt{n} \Longrightarrow E[L(\pi)] \geq \sqrt{n}$$  
+		
+
+\end{enumerate}
+
+
+\section*{Problem 3}
+设$S_1 = \{x_1, x_2, \cdots, x_n\}$, $S_2 = \{y_1, y_2, \cdots, y_n\}$
+令
+$$FING(S_1, x) = (x - x_1)(x - x_2)\cdots(x-x_n)$$
+$$FING(S_2, x) = (x - y_1)(x - y_2)\cdots(x-y_n)$$
+
+令$p$为一个大于$n$的素数, 每次取$\mathbb{F}_p$中的一个随机变量$u$, 在$\mathbb{F}_p$中计算$FING(S_1, u), FING(S_2, u)$:
+
+若$S_1 = S_2$, 则一定有$FING(S_1, u) = FING(S_2, u)$.
+
+令$G(x) = FING(S_1, x) - FING(S_2, x)$, 这是关于$x$的一个$\leq n$次的首一多项式, 由唯一分解定理, 可以得出如果$S_1 \not= S_2$, $G \not\equiv 0$.
+
+由代数基本定理$G(x)$最
+多有$n$个根, 	
+因此$G(u) = 0$的概率$\leq \frac{n}{p}$, 且
+$Pr\{G(u) = 0, G(v) = 0\} = Pr\{G(u) = 0\}Pr\{G(v) = 0\}$.
+
+所以我们重复这个算法$T$次, 每次选一个随机变量$u$, 然后判断$G(u)$是否等于0, 
+如果要做到以$(1-\epsilon)$的概率$S_1 = S_2$, 则需要$(\frac{n}{p})^T < \epsilon$, 令$T = \log(\epsilon) / (\log(n) - \log(p))$即可.
+
+因此总的时间复杂度为$O(T \times n)$, 传输的数据量为$T\log(p)$.
+
+\section*{Problem 4}
+\begin{proof}
+仿照Schwarz Zippel定理的证明, 对$n$使用归纳法:
+
+\begin{enumerate}
+	\item 
+	当$n = 1$时: $Q(r_1)$为一个关于$r_1$的$d_1$次多项式, 由代数基本定理, 有至多$d_1$个根, 因此:
+	$$Pr\{Q(r_1) = 0\mid Q \not\equiv 0\} \leq \frac{d_1}{S_1}$$
+	\item
+	当$n > 1$时: $Q\not\equiv 0$, 可以将$Q(r_1, r_2, \cdots, r_n)$视作关于$r_n$的$k_n$次多项式, 
+	$$Q(r_1, r_2, \cdots, r_n) = x_n^{d_k} f_{d_n}(r_1, r_2, \cdots, r_{n-1}) + \overline{f}(x_1, x_2, \cdots, x_n) $$
+	且$f_{d_n}\not\equiv 0$, 结合I.H.和可得:
+	\begin{eqnarray*}	
+	Pr\{f(r_1, r_2, \cdots, r_n) = 0\} & = & Pr\{f(r_1, r_2, \cdots, r_{n-1})=0 \mid f_{d_n}(r_1, r_2, \cdots, r_{n-1}) = 0\} Pr\{f_{d_n}(r_1, r_2, \cdots, r_{n-1}) = 0\} \\
+									   & + & Pr\{f(r_1, r_2, \cdots, r_{n-1})=0 \mid f_{d_n}(r_1, r_2, \cdots, r_{n-1}) \not= 0\} Pr\{f_{d_n}(r_1, r_2, \cdots, r_{n-1}) \not= 0\} \\
+									   & \leq & \sum_{i=1}^{n-1}\frac{d_i}{|S_i|} + \frac{d_n}{|S_n|}\\
+									   & = & \sum_{i=1}^{n}\frac{d_i}{|S_i|}
+	\end{eqnarray*}
+\end{enumerate}
+\end{proof}
+\section*{Problem 5}
+为了方便讨论, 我们将$S(v)$的size限定为$10d$, 定义bad event如下:
+
+$A = (x, y, c)$表示$(x,y)\in E$且点$x$和点$y$都选择了颜色$c$的事件, $p(A) \leq \frac{1}{10d}\times\frac{1}{10d} = \frac{1}{100d^2}$.
+
+下面考虑所有这些事件组成的dependency graph, 设事件$A = (x_1, y_1, c)$, 与它有关的事件至少包含$x_1, y_1$其中之一, 与$x_1$有关的事件$\leq 10d \times d = 10d^2$, 与$x_2$有关的事件$\leq 10d \times d = 10d^2$, 因此$A$的$deg\leq 20d^2 - 1$. 由于$A$的任意性, dependency graph中所有点的度$\leq 20d^2 - 1$.	
+
+由Lov\'asz Local Lemma, $ep(d+1) = \frac{e\cdot20d^2}{100d^2} < 1$, 存在合法的染色.
+
+\section*{Problem 6}
+
+\section*{Problem 7}
+原问题等价于将$10kn$个ball放入$n$个bin中, 要求以$\geq 0.9$的概率每个bin中有$\geq k$个ball, 求$k$的范围.
+
+考虑每个bin, $E[X_i] = 10k$, 由\it{Chernoff Bound}\rm, $$Pr\{X_i< (1 - 0.9) 10k\} < \left(\frac{e^{-0.9}}{0.1 ^ {0.1}}\right)^{10k}$$
+
+$$\Pr\{\exists i, X_i < k \} \leq n\cdot Pr\{X_i < k\} \leq n\left(\frac{e^{-0.9}}{0.1 ^ {0.1}}\right)^{10k} $$
+
+如果$n\left(\frac{e^{-0.9}}{0.1 ^ {0.1}}\right)^{10k} \leq 0.1$, 则原题条件满足,
+
+解以上不等式, 得出$k \geq \frac{\log(n) + \log(10)}{9 - \log(10)} \approx 0.149 \log(n) + 0.344$.
+
+\section*{Problem 8}
+使用coupling的思想.
+
+首先证明: $\frac{n}{2}$个小球随机放入$n$个bin中, 则max load的期望为$\Theta\left(\frac{\log n}{\log\log n}\right)$.
+
+\begin{proof}
+考虑$n$个在$[n]$中均匀分布的mutually independent的随机变量, 表示随机放入$n$个bin中的$n$个ball, 他们中前半部分和后半部分分别构成$\frac{n}{2}$个独立同分布的随机变量, 且前后部分之间独立. 对于任意一种outcome:$\mathbf{r} = \mathbf{r^1} + \mathbf{r^2}$($\mathbf{r^1},\mathbf{r^2}$分别代表前一半和后一半的随机变量, `+'表示拼接, 下同), $\mathbf{r}$产生的max load为$L(\mathbf{r})$, $\mathbf{r^1}$的max load为$L(\mathbf{r^1})$, $\mathbf{r^2}$的maxload为$L(\mathbf{r^2})$.
+
+容易证明对于任意一个outcome, $L(\mathbf{r}) > L(\mathbf{r^1})$, 由此可以得出
+$$E[L(\mathbf{r})] \geq E[L(\mathbf{r^1})]$$
+
+又由于$L(\mathbf{r}) < L(\mathbf{r^1}) + L(\mathbf{r^2})$, 得出
+$$E[L(\mathbf{r})] \leq 2E[L(\mathbf{r^1})] $$
+
+因此$\frac{1}{2}E[L(\mathbf{r})] \leq E[L(\mathbf{r^1})] \leq E[L(\mathbf{r})]$.
+
+由于$E[L(\mathbf{r})] = \Theta\left(\frac{\log n}{\log\log n}\right)$, 得出$E[L(\mathbf{r})] = \Theta\left(\frac{\log n}{\log\log n}\right)$.
+\end{proof}
+
+考虑$3n$个在$[n]$中均匀分布的mutually independent的随机变量表示在此规则下这个过程所需要的所有随机变量.
+对于任意一个outcome:$\mathbf{x} = \mathbf{x^1} + \mathbf{x^2} + \mathbf{x^3}$(其中$\bf{x^1}$生成one choice的部分, $\bf{x^2}, \bf{x^3}$生成two choice的部分, 下同), 
+三个规则都满足如下性质:
+\begin{enumerate}
+		\item $$L(\mathbf{x}) \geq L(\mathbf{x^1})$$
+		(对于每个two choice$(x^2_i, x^3_i)$, 不做任何操作即得到右式的max load)
+		\item $$L(\mathbf{x}) \leq L(\mathbf{x^1}) + L(\mathbf{x^2}) + L(\mathbf{x^3})$$
+		(对于每个two choice$(x^2_i, x^3_i)$, 在$x^2_i$和$x^3_i$上各放一个ball, 不等式由归纳可证)
+\end{enumerate}
+
+由此可得$L(\mathbf{x^1}) \leq L(\mathbf{x}) \leq L(\mathbf{x^1}) + L(\mathbf{x^2}) + L(\mathbf{x^3})$,
+
+求期望得$$E[L(\mathbf{x^1})] = \Theta\left(\frac{\log n}{\log\log n}\right)$$
+\section*{Acknowledgements}
+第一题我原本并没有想到利用每两个字符是$00,11$类型还是$10, 01$类型这一信息, 所以只推出了$f(p) = pq + \frac{1}{2}\left(p^2 + q^2\right)f\left(\frac{p^2}{p^2 + q^2}\right)$这一式子, 这个构造方法是在高宇学长的解法中看到的.
+
+用信息熵推出$E(K)$的上界来自\it{Elements of Information Theory} \rm, 习题2-17的hint.
+
+感谢游宇榕提供了第二题中$Pr\{a_n\geq i\} = Pr\{X_n\geq i\} + Pr\{X_n\geq i + 1\}$这一重要的基于对称性的式子.
+
+感谢刘志健同学提供了第三题的函数形式.
+
+\end{document}
